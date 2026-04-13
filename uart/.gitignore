@@ -1,0 +1,7 @@
+top.rpt
+top.bin
+top-yosys.log
+uart_send_sim
+uart_recv_sim
+obj_dir/
+.venv/
