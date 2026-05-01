@@ -28,7 +28,8 @@ sim-generate:
 	for sim in send recv; do \
 		verilator --trace-vcd --Mdir sim/obj_dir -Isrc \
 			-Wno-WIDTHEXPAND -Wno-WIDTHTRUNC \
-			-cc src/uart_$${sim}.v \
+			-cc src/uart_$${sim}.v src/parity.v \
+			--top-module src/uart_$${sim} \
 			-GBAUD_RATE=12500000 -GPARITY_MODE=1; \
 		make -C sim/obj_dir -f Vuart_$${sim}.mk; \
 	done

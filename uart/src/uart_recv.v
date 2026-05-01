@@ -69,6 +69,7 @@ always @(posedge i_clk) begin
 					else begin
 						r_ready <= 1;
 						r_data <= r_inflight_data;
+						r_inflight_data <= 0;
 						r_state <= (STOP_BITS == 0) ? IDLE : STOP;
 					end
 				end
@@ -81,6 +82,7 @@ always @(posedge i_clk) begin
 				if (w_good) begin
 					r_ready <= 1;
 					r_data <= r_inflight_data;
+					r_inflight_data <= 0;
 				end
 
 			if (w_end)
