@@ -3,5 +3,7 @@ top.bin
 top-yosys.log
 uart_send_sim
 uart_recv_sim
+crc_sim
 obj_dir/
 .venv/
+*.vcd

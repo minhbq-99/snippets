@@ -26,7 +26,7 @@ wire w_middle, w_end;
 wire w_parity;
 
 reg r_tx_data = 1'b1;
-reg r_done;
+reg r_done = 1;
 
 clock_keeping #(.BAUD_RATE(BAUD_RATE)) clk_keeping(
 	.i_clk(i_clk),
@@ -52,8 +52,10 @@ always @(posedge i_clk) begin
 				r_data_pos <= 0;
 				r_done <= 0;
 			end
-			else
+			else begin
 				r_tx_data <= 1;
+				r_done <= 1;
+			end
 		end
 		IDLE_TO_DATA: begin
 			if (w_end) begin
@@ -69,8 +71,14 @@ always @(posedge i_clk) begin
 						r_state <= PARITY;
 						r_tx_data <= w_parity;
 					end
-					else
-						r_state <= (STOP_BITS == 0) ? IDLE : STOP;
+					else begin
+						if (STOP_BITS == 0) begin
+							r_state <= IDLE;
+							r_done <= 1;
+						end
+						else
+							r_state <= STOP;
+					end
 				end
 				else begin
 					r_data_pos <= r_data_pos + 1;
@@ -81,7 +89,12 @@ always @(posedge i_clk) begin
 		PARITY: begin
 			r_tx_data <= w_parity;
 			if (w_end) begin
-				r_state <= (STOP_BITS == 0) ? IDLE : STOP;
+				if (STOP_BITS == 0) begin
+					r_state <= IDLE;
+					r_done <= 1;
+				end
+				else
+					r_state <= STOP;
 				r_tx_data <= 1;
 			end
 		end
@@ -90,8 +103,8 @@ always @(posedge i_clk) begin
 			if (w_end) begin
 				if (r_stop_bits == STOP_BITS - 1) begin
 					r_state <= IDLE;
-					r_stop_bits <= 0;
 					r_done <= 1;
+					r_stop_bits <= 0;
 				end
 				else
 					r_stop_bits <= r_stop_bits + 1;
@@ -103,7 +116,7 @@ always @(posedge i_clk) begin
 end
 
 assign o_tx_data = r_tx_data;
-assign o_done = r_done;
+assign o_done = r_done && !i_start;
 assign w_reset = i_start && r_state == IDLE;
 
 initial begin

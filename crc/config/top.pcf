@@ -1,4 +1,5 @@
 set_io i_clk 15
+set_io i_reset 51
 
 set_io i_rx_data 73
 set_io o_tx_data 74

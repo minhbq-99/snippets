@@ -1,0 +1,32 @@
+module crc(
+	input i_data,
+	input i_clk,
+	input i_enable,
+	input i_reset,
+	output [{{ width }}-1:0] o_crc
+);
+
+reg [{{ width }}-1:0] r_crc;
+wire w_temp;
+
+always @(posedge i_clk or posedge i_reset) begin
+	if (i_reset)
+		r_crc <= {% raw %}{{% endraw %}{{ width }}{% raw %}{1'b1}}{% endraw %};
+	else begin
+		if (i_enable) begin
+{{ data }}
+		end
+	end
+end
+
+assign w_temp = r_crc[0] ^ i_data;
+assign o_crc = ~r_crc;
+
+initial begin
+	$display("[%0t] Tracing to crc.vcd...\n", $time);
+	$dumpfile("crc.vcd");
+	$dumpvars();
+end
+
+endmodule
+

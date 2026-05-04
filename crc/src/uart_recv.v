@@ -1,5 +1,6 @@
 `include "constants.v"
 
+// o_data is ready to read on the posedge of o_ready
 module uart_recv #(parameter
 	BAUD_RATE = 115200,
 	DATA_BITS = 8,
