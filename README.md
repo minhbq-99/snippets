@@ -10,3 +10,5 @@ connection establishment.
 - [floating-point](./floating-point/): try to learn more about floating point
 numbers
 - [crc](./crc/): a CRC calculator with UART communication
+- [disassembler](./disassembler/): a simple x64 disassembler, it can only
+disassembles a hello world program
