@@ -399,18 +399,16 @@ impl Reader {
     }
 
     fn parse_alu_rm_imm8(&mut self, prefix: &Prefix) -> String {
-        static ALU_MAP: LazyLock<HashMap<u8, String>> = LazyLock::new(|| {
-            let mut map = HashMap::new();
-            map.insert(0, String::from("add"));
-            map.insert(1, String::from("or"));
-            map.insert(2, String::from("adc"));
-            map.insert(3, String::from("sbb"));
-            map.insert(4, String::from("and"));
-            map.insert(5, String::from("sub"));
-            map.insert(6, String::from("xor"));
-            map.insert(7, String::from("cmp"));
-            map
-        });
+        const ALU_MAP: [&str; 8] = [
+            "add",
+            "or",
+            "adc",
+            "sbb",
+            "and",
+            "sub",
+            "xor",
+            "cmp",
+        ];
 
         let operand_size = prefix.get_operand_size();
         let byte = self.u8().unwrap();
@@ -421,7 +419,7 @@ impl Reader {
         }
         let rm = get_reg(modrm.rm, operand_size, prefix.rex.is_some());
 
-        let opcode = ALU_MAP.get(&modrm.reg).unwrap();
+        let opcode = ALU_MAP[modrm.reg as usize];
         let imm = self.get_imm(8) as i8;
         // FIXME: The output might be confusing when imm is negative
         format!("{} {}, {:#02x}", opcode, rm, imm)
@@ -438,7 +436,7 @@ impl Reader {
         let op = opcode - 0x80;
         let displacement = self.get_imm(32) as u64;
         let pc = self.base_address + (self.current_byte() as u64) + displacement;
-        let op_str = JCC_MAP.get(&op).unwrap();
+        let op_str = JCC_MAP[op as usize];
 
         format!("{} {:#x}", op_str, pc)
     }
@@ -447,7 +445,7 @@ impl Reader {
         let op = opcode - 0x70;
         let displacement = self.get_imm(8) as u64;
         let pc = self.base_address + (self.current_byte() as u64) + displacement;
-        let op_str = JCC_MAP.get(&op).unwrap();
+        let op_str = JCC_MAP[op as usize];
 
         format!("{} {:#x}", op_str, pc)
     }
@@ -471,26 +469,24 @@ impl Reader {
     }
 }
 
-static JCC_MAP: LazyLock<HashMap<u8, String>> = LazyLock::new(|| {
-    let mut map = HashMap::new();
-    map.insert(0x0, String::from("jo"));
-    map.insert(0x1, String::from("jno"));
-    map.insert(0x2, String::from("jb"));
-    map.insert(0x3, String::from("jnb"));
-    map.insert(0x4, String::from("je"));
-    map.insert(0x5, String::from("jne"));
-    map.insert(0x6, String::from("jbe"));
-    map.insert(0x7, String::from("ja"));
-    map.insert(0x8, String::from("js"));
-    map.insert(0x9, String::from("jns"));
-    map.insert(0xa, String::from("jp"));
-    map.insert(0xb, String::from("jnp"));
-    map.insert(0xc, String::from("jl"));
-    map.insert(0xd, String::from("jge"));
-    map.insert(0xe, String::from("jle"));
-    map.insert(0xf, String::from("jg"));
-    map
-});
+const JCC_MAP: [&str; 16] = [
+    "jo",
+    "jno",
+    "jb",
+    "jnb",
+    "je",
+    "jne",
+    "jbe",
+    "ja",
+    "js",
+    "jns",
+    "jp",
+    "jnp",
+    "jl",
+    "jge",
+    "jle",
+    "jg",
+];
 
 //  7                            0
 // +---+---+---+---+---+---+---+---+
