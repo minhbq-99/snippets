@@ -6,6 +6,7 @@ use paste::paste;
 #[derive(Debug)]
 pub struct Reader {
     data: String,
+    /// The current position in the hex string
     current: usize,
     base_address: u64,
 }
@@ -96,6 +97,14 @@ impl Reader {
             current: 0,
             base_address: base_address,
         }
+    }
+
+    fn current_byte(&self) -> usize {
+        self.current / 2
+    }
+
+    fn change_current_byte(&mut self, delta: i64) {
+        self.current = ((self.current as i64) + delta) as usize;
     }
 
     gen_parse_reg_rm!("mov", 0x88, 0x8a, 0x89, 0x8b);
@@ -193,10 +202,10 @@ impl Reader {
                                         instruction = String::from("endbr64");
                                         end_of_instruction = true;
                                     } else {
-                                        self.current -= 3;
+                                        self.change_current_byte(-3);
                                     }
                                 } else {
-                                    self.current -= 3;
+                                    self.change_current_byte(-3);
                                 }
                             }
                         }
@@ -420,7 +429,7 @@ impl Reader {
 
     fn parse_call(&mut self) -> String {
         let displacement = self.get_imm(32) as u64;
-        let pc = (self.base_address + ((self.current / 2) as u64)).wrapping_add(displacement);
+        let pc = (self.base_address + (self.current_byte()  as u64)).wrapping_add(displacement);
 
         format!("call {:#x}", pc)
     }
@@ -428,7 +437,7 @@ impl Reader {
     fn parse_jcc_rel32(&mut self, opcode: u8) -> String {
         let op = opcode - 0x80;
         let displacement = self.get_imm(32) as u64;
-        let pc = self.base_address + ((self.current / 2) as u64) + displacement;
+        let pc = self.base_address + (self.current_byte() as u64) + displacement;
         let op_str = JCC_MAP.get(&op).unwrap();
 
         format!("{} {:#x}", op_str, pc)
@@ -437,7 +446,7 @@ impl Reader {
     fn parse_jcc_rel8(&mut self, opcode: u8) -> String {
         let op = opcode - 0x70;
         let displacement = self.get_imm(8) as u64;
-        let pc = self.base_address + ((self.current / 2) as u64) + displacement;
+        let pc = self.base_address + (self.current_byte() as u64) + displacement;
         let op_str = JCC_MAP.get(&op).unwrap();
 
         format!("{} {:#x}", op_str, pc)
